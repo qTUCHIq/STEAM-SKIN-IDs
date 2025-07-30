@@ -1,5 +1,6 @@
 <h1 align="center">STEAM-SKIN-IDs</h1>
 A comprehensive list of CS2 skin IDs for Steam, BUFF.163, C5game, YouPin898, and IGXE. Includes available def_indexes, paint_indexes and IDs grouped into different categories.
+This repository is used for developing https://wskins.ru
 
 ## Acknowledgements
 
