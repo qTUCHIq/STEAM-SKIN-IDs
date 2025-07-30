@@ -635,8 +635,10 @@ func getSteamMarketIDs(marketplace string) (map[string]int, error) {
 		return nil, fmt.Errorf("Failed to fetch market ids. %w", err)
 	}
 
-	for _, item := range data {
-		ids[item.EnName] = item.NameID
+	for name, item := range data {
+		if item.EnName == name {
+			ids[name] = item.NameID
+		}
 	}
 
 	return ids, nil
