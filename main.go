@@ -636,7 +636,8 @@ func getSteamMarketIDs(marketplace string) (map[string]int, error) {
 	}
 
 	for name, item := range data {
-		if item.EnName == name {
+		enName := item.EnName
+		if enName == name || strings.HasSuffix(enName, "(Holo/Foil)") {
 			ids[name] = item.NameID
 		}
 	}
