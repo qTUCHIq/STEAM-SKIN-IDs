@@ -8,6 +8,7 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"regexp"
 	"sort"
 	"strconv"
 	"strings"
@@ -147,9 +148,9 @@ type Graffiti struct {
 		Name  string `json:"name"`
 		Image string `json:"image"`
 	} `json:"crates"`
-	MarketHashName string `json:"market_hash_name"`
-	Image          string `json:"image"`
-	DefIndex       string `json:"def_index"`
+	MarketHashName string  `json:"market_hash_name"`
+	Image          string  `json:"image"`
+	DefIndex       *string `json:"def_index"`
 	SpecialNotes   []struct {
 		Source string `json:"source"`
 		Text   string `json:"text"`
@@ -439,13 +440,17 @@ func getSteamCollectibleIDs(endpoint string) (map[string]int, error) {
 		return nil, fmt.Errorf("Failed to fetch steam ids. %w", err)
 	}
 
+	excludedPattern := `\b(Souvenir Token|2024 Souvenir Package|2025 Souvenir Package)\b`
 	for _, item := range data {
 		id, err := strconv.Atoi(item.DefIndex)
 
 		if err == nil {
 			marketHashName := item.MarketHashName
 			if marketHashName != nil {
-				ids[*marketHashName] = id
+				isExcluded, _ := regexp.MatchString(excludedPattern, *marketHashName)
+				if !isExcluded {
+					ids[*marketHashName] = id
+				}
 			}
 		}
 	}
@@ -462,12 +467,17 @@ func getSteamCrateIDs(endpoint string) (map[string]int, error) {
 		return nil, fmt.Errorf("Failed to fetch steam ids. %w", err)
 	}
 
+	excludedPattern := `\b(Sticker Collection|Patch Collection|Storage Unit)\b`
 	for _, item := range data {
 		idParts := strings.Split(item.ID, "-")
 
 		id, err := strconv.Atoi(idParts[1])
 		if err == nil {
-			ids[item.MarketHashName] = id
+			marketHashName := item.MarketHashName
+			isExcluded, _ := regexp.MatchString(excludedPattern, marketHashName)
+			if !isExcluded {
+				ids[marketHashName] = id
+			}
 		}
 	}
 
@@ -484,11 +494,12 @@ func getSteamGraffitiIDs(endpoint string) (map[string]int, error) {
 	}
 
 	for _, item := range data {
-		idParts := strings.Split(item.ID, "-")
+		if item.DefIndex != nil {
+			id, err := strconv.Atoi(*item.DefIndex)
 
-		id, err := strconv.Atoi(idParts[1])
-		if err == nil {
-			ids[item.MarketHashName] = id
+			if err == nil {
+				ids[item.MarketHashName] = id
+			}
 		}
 	}
 
@@ -612,13 +623,22 @@ func getSteamStickerIDs(endpoint string) (map[string]int, error) {
 		return nil, fmt.Errorf("Failed to fetch steam ids. %w", err)
 	}
 
+	excludedNames := map[string]struct{}{
+		"Sticker | 3DMAX | DreamHack 2014":             {},
+		"Sticker | London Conspiracy | DreamHack 2014": {},
+		"Sticker | dAT team | DreamHack 2014":          {},
+		"Sticker | mousesports | DreamHack 2014":       {},
+	}
+
 	for _, item := range data {
 		id, err := strconv.Atoi(item.DefIndex)
 
 		if err == nil {
 			marketHashName := item.MarketHashName
 			if marketHashName != nil {
-				ids[*marketHashName] = id
+				if _, isExcluded := excludedNames[*marketHashName]; !isExcluded {
+					ids[*marketHashName] = id
+				}
 			}
 		}
 	}
