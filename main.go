@@ -484,8 +484,8 @@ func getSteamCrateIDs(endpoint string) (map[string]int, error) {
 	return ids, nil
 }
 
-func getSteamGraffitiIDs(endpoint string) (map[string]int, error) {
-	ids := make(map[string]int)
+func getSteamGraffitiIDs(endpoint string) (map[string]string, error) {
+	ids := make(map[string]string)
 	url := byMykelAPIBaseURL + endpoint
 
 	var data []Graffiti
@@ -493,13 +493,15 @@ func getSteamGraffitiIDs(endpoint string) (map[string]int, error) {
 		return nil, fmt.Errorf("Failed to fetch steam ids. %w", err)
 	}
 
-	for _, item := range data {
-		if item.DefIndex != nil {
-			id, err := strconv.Atoi(*item.DefIndex)
+	excludedPattern := `\b(2019|2021|2022|2023|2024|2025)\b`
 
-			if err == nil {
-				ids[item.MarketHashName] = id
-			}
+	for _, item := range data {
+		idParts := strings.Split(item.ID, "-")
+		marketHashName := item.MarketHashName
+
+		isExcluded, _ := regexp.MatchString(excludedPattern, marketHashName)
+		if !isExcluded {
+			ids[marketHashName] = idParts[1]
 		}
 	}
 
@@ -754,7 +756,7 @@ func main() {
 	var steamAgentIDs map[string]int
 	var steamCollectibleIDs map[string]int
 	var steamCrateIDs map[string]int
-	var steamGraffitiIDs map[string]int
+	var steamGraffitiIDs map[string]string
 	var steamHighlightIDs map[string]string
 	var steamKeychainIDs map[string]int
 	var steamKeyIDs map[string]any
