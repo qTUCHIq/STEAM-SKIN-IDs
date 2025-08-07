@@ -19,64 +19,64 @@ This repository provides dictionaries in two formats:
 - mini: A minified JSON format to reduce file size
 
 ```http
-GET https://raw.githubusercontent.com/qTUCHIq/STEAM-SKIN-IDs/refs/heads/main/{format}/{category}/{name}.json
+GET https://raw.githubusercontent.com/qTUCHIq/STEAM-SKIN-IDs/main/{format}/{category}/{name}.json
 ```
 
 ## Available Data
 
 ### Indexes
 ```
-https://raw.githubusercontent.com/qTUCHIq/STEAM-SKIN-IDs/refs/heads/main/mini/indexes/def_indexes.json
+https://raw.githubusercontent.com/qTUCHIq/STEAM-SKIN-IDs/main/mini/indexes/def_indexes.json
 ```
 ```
-https://raw.githubusercontent.com/qTUCHIq/STEAM-SKIN-IDs/refs/heads/main/mini/indexes/paint_indexes.json
+https://raw.githubusercontent.com/qTUCHIq/STEAM-SKIN-IDs/main/mini/indexes/paint_indexes.json
 ```
 ### Grouped IDs
 ```
-https://raw.githubusercontent.com/qTUCHIq/STEAM-SKIN-IDs/refs/heads/main/mini/grouped_ids/agents.json
+https://raw.githubusercontent.com/qTUCHIq/STEAM-SKIN-IDs/main/mini/grouped_ids/agents.json
 ```
 ```
-https://raw.githubusercontent.com/qTUCHIq/STEAM-SKIN-IDs/refs/heads/main/mini/grouped_ids/collectibles.json
+https://raw.githubusercontent.com/qTUCHIq/STEAM-SKIN-IDs/main/mini/grouped_ids/collectibles.json
 ```
 ```
-https://raw.githubusercontent.com/qTUCHIq/STEAM-SKIN-IDs/refs/heads/main/mini/grouped_ids/crates.json
+https://raw.githubusercontent.com/qTUCHIq/STEAM-SKIN-IDs/main/mini/grouped_ids/crates.json
 ```
 ```
-https://raw.githubusercontent.com/qTUCHIq/STEAM-SKIN-IDs/refs/heads/main/mini/grouped_ids/graffiti.json
+https://raw.githubusercontent.com/qTUCHIq/STEAM-SKIN-IDs/main/mini/grouped_ids/graffiti.json
 ```
 ```
-https://raw.githubusercontent.com/qTUCHIq/STEAM-SKIN-IDs/refs/heads/main/mini/grouped_ids/highlights.json
+https://raw.githubusercontent.com/qTUCHIq/STEAM-SKIN-IDs/main/mini/grouped_ids/highlights.json
 ```
 ```
-https://raw.githubusercontent.com/qTUCHIq/STEAM-SKIN-IDs/refs/heads/main/mini/grouped_ids/keychains.json
+https://raw.githubusercontent.com/qTUCHIq/STEAM-SKIN-IDs/main/mini/grouped_ids/keychains.json
 ```
 ```
-https://raw.githubusercontent.com/qTUCHIq/STEAM-SKIN-IDs/refs/heads/main/mini/grouped_ids/keys.json
+https://raw.githubusercontent.com/qTUCHIq/STEAM-SKIN-IDs/main/mini/grouped_ids/keys.json
 ```
 ```
-https://raw.githubusercontent.com/qTUCHIq/STEAM-SKIN-IDs/refs/heads/main/mini/grouped_ids/music_kits.json
+https://raw.githubusercontent.com/qTUCHIq/STEAM-SKIN-IDs/main/mini/grouped_ids/music_kits.json
 ```
 ```
-https://raw.githubusercontent.com/qTUCHIq/STEAM-SKIN-IDs/refs/heads/main/mini/grouped_ids/patches.json
+https://raw.githubusercontent.com/qTUCHIq/STEAM-SKIN-IDs/main/mini/grouped_ids/patches.json
 ```
 ```
-https://raw.githubusercontent.com/qTUCHIq/STEAM-SKIN-IDs/refs/heads/main/mini/grouped_ids/stickers.json
+https://raw.githubusercontent.com/qTUCHIq/STEAM-SKIN-IDs/main/mini/grouped_ids/stickers.json
 ```
 ### Market IDs
 ```
-https://raw.githubusercontent.com/qTUCHIq/STEAM-SKIN-IDs/refs/heads/main/mini/market_ids/steam.json
+https://raw.githubusercontent.com/qTUCHIq/STEAM-SKIN-IDs/main/mini/market_ids/steam.json
 ```
 ```
-https://raw.githubusercontent.com/qTUCHIq/STEAM-SKIN-IDs/refs/heads/main/mini/market_ids/buff163.json
+https://raw.githubusercontent.com/qTUCHIq/STEAM-SKIN-IDs/main/mini/market_ids/buff163.json
 ```
 ```
-https://raw.githubusercontent.com/qTUCHIq/STEAM-SKIN-IDs/refs/heads/main/mini/market_ids/c5game.json
+https://raw.githubusercontent.com/qTUCHIq/STEAM-SKIN-IDs/main/mini/market_ids/c5game.json
 ```
 ```
-https://raw.githubusercontent.com/qTUCHIq/STEAM-SKIN-IDs/refs/heads/main/mini/market_ids/youpin898.json
+https://raw.githubusercontent.com/qTUCHIq/STEAM-SKIN-IDs/main/mini/market_ids/youpin898.json
 ```
 ```
-https://raw.githubusercontent.com/qTUCHIq/STEAM-SKIN-IDs/refs/heads/main/mini/market_ids/igxe.json
+https://raw.githubusercontent.com/qTUCHIq/STEAM-SKIN-IDs/main/mini/market_ids/igxe.json
 ```
 ## Disclaimer
 This is an unofficial project. I cannot and do not guarantee the correctness, accuracy, or timeliness of the data provided. The data is updated periodically, but there may be delays or errors. I welcome any suggestions, feedback, or contributions!
