@@ -630,6 +630,13 @@ func getSteamStickerIDs(endpoint string) (map[string]int, error) {
 		"Sticker | London Conspiracy | DreamHack 2014": {},
 		"Sticker | dAT team | DreamHack 2014":          {},
 		"Sticker | mousesports | DreamHack 2014":       {},
+		"Sticker | Ninja (Foil)":                       {},
+		"Sticker | The Bomber (Foil)":                  {},
+		"Sticker | The Nader (Foil)":                   {},
+		"Sticker | The Awper (Foil)":                   {},
+		"Sticker | The Fragger (Foil)":                 {},
+		"Sticker | Support (Foil)":                     {},
+		"Sticker | The Leader (Foil)":                  {},
 	}
 
 	for _, item := range data {
