@@ -42,6 +42,8 @@ var (
 		"Accept-encoding": {"gzip, deflate, br, zstd"},
 		"Priority":        {"u=1"},
 	}
+
+	defIndexes map[string]int
 )
 
 type MarketItemID struct {
@@ -667,7 +669,9 @@ func getSteamMarketIDs(marketplace string) (map[string]int, error) {
 	for name, item := range data {
 		enName := item.EnName
 		if enName == name || strings.HasSuffix(enName, "(Holo/Foil)") {
-			ids[name] = item.NameID
+			if _, exists := defIndexes[name]; !exists {
+				ids[name] = item.NameID
+			}
 		}
 	}
 
@@ -684,6 +688,9 @@ func getChineseMarketIDs(marketplace string) (map[string]int, error) {
 
 	for key, value := range data {
 		if value == -1 {
+			delete(data, key)
+		}
+		if _, exists := defIndexes[key]; exists {
 			delete(data, key)
 		}
 	}
@@ -758,7 +765,6 @@ func main() {
 		}
 	}
 
-	var defIndexes map[string]int
 	var paintIndexes map[string]int
 	var steamAgentIDs map[string]int
 	var steamCollectibleIDs map[string]int
@@ -770,15 +776,10 @@ func main() {
 	var steamMusicKitIDs map[string]int
 	var steamPatchIDs map[string]int
 	var steamStickerIDs map[string]int
-	var steamMarketIDs map[string]int
 
-	chineseMarketplaces := []string{"buff", "c5", "uuyp", "igxe"}
-	chineseMarketIDs := make(map[string]map[string]int)
-
-	errs := make(chan error, 16)
-	var mu sync.Mutex
+	errs := make(chan error, 11)
 	var wg sync.WaitGroup
-	wg.Add(16)
+	wg.Add(11)
 
 	go func() {
 		defer wg.Done()
@@ -888,6 +889,21 @@ func main() {
 			return
 		}
 	}()
+
+	wg.Wait()
+	close(errs)
+
+	for err := range errs {
+		fmt.Println("Error during API fetch. ", err)
+	}
+
+	var steamMarketIDs map[string]int
+	chineseMarketplaces := []string{"buff", "c5", "uuyp", "igxe"}
+	chineseMarketIDs := make(map[string]map[string]int)
+
+	var mu sync.Mutex
+	errs = make(chan error, 5)
+	wg.Add(5)
 
 	go func() {
 		defer wg.Done()
