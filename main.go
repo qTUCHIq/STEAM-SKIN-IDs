@@ -49,45 +49,18 @@ var (
 )
 
 type ModestSerhatResponse struct {
-	Items    map[string]Item             `json:"items"`
+	Items map[string]struct {
+		Buff163GoodsID           *int             `json:"buff163_goods_id,omitempty"`
+		YoupinID                 *int             `json:"youpin_id,omitempty"`
+		BuffMarketGoodsID        *int             `json:"buffmarket_goods_id,omitempty"`
+		Buff163StickerID         *int             `json:"buff163_sticker_id,omitempty"`
+		Buff163PaintSeedGroupIDs *map[string]*int `json:"buff163_paintseed_group_ids,omitempty"`
+		DoublespaceName          *string          `json:"doublespace_name,omitempty"`
+		Buff163PhaseIDs          *map[string]*int `json:"buff163_phase_ids,omitempty"`
+		Buff163TagIDs            *map[string]*int `json:"buff163_tag_ids,omitempty"`
+		Buff163PatchID           *int             `json:"buff163_patch_id,omitempty"`
+	} `json:"items"`
 	Patterns map[string]map[string][]int `json:"patterns"`
-}
-
-type Item struct {
-	Buff163GoodsID           *int                      `json:"buff163_goods_id,omitempty"`
-	YoupinID                 *int                      `json:"youpin_id,omitempty"`
-	BuffMarketGoodsID        *int                      `json:"buffmarket_goods_id,omitempty"`
-	Buff163StickerID         *int                      `json:"buff163_sticker_id,omitempty"`
-	Buff163PaintSeedGroupIDs *Buff163PaintseedGroupIDS `json:"buff163_paintseed_group_ids,omitempty"`
-	DoublespaceName          *string                   `json:"doublespace_name,omitempty"`
-	Buff163PhaseIDs          *Buff163PhaseIDS          `json:"buff163_phase_ids,omitempty"`
-	Buff163TagIDs            map[string]*int           `json:"buff163_tag_ids,omitempty"`
-	Buff163PatchID           *int                      `json:"buff163_patch_id,omitempty"`
-}
-
-type Buff163PaintseedGroupIDS struct {
-	SmileFace     *int `json:"Smile Face,omitempty"`
-	MuscleMan     *int `json:"Muscle Man,omitempty"`
-	SurprisedFace *int `json:"Surprised Face,omitempty"`
-	FunnyFace     *int `json:"Funny Face,omitempty"`
-	AwkwardFace   *int `json:"Awkward Face,omitempty"`
-	Togepi        *int `json:"Togepi,omitempty"`
-	BlueGem       *int `json:"Blue Gem,omitempty"`
-}
-
-type Buff163PhaseIDS struct {
-	Ruby       *int `json:"Ruby"`
-	Sapphire   *int `json:"Sapphire,omitempty"`
-	BlackPearl *int `json:"Black Pearl"`
-	Phase1     *int `json:"Phase 1"`
-	Phase2     *int `json:"Phase 2"`
-	Phase3     *int `json:"Phase 3"`
-	Phase4     *int `json:"Phase 4"`
-	Emerald    *int `json:"Emerald"`
-}
-
-type CaseHardened struct {
-	BlueGem []int `json:"Blue Gem"`
 }
 
 type Agent struct {
@@ -428,15 +401,15 @@ func getDecompressedBody(response *http.Response) (io.ReadCloser, error) {
 }
 
 func getSteamIndexes(endpoint string) (map[string]int, map[string]int, error) {
-	defIndexes := make(map[string]int)
-	paintIndexes := make(map[string]int)
-
 	url := byMykelAPIBaseURL + endpoint
 
 	var data []Skin
 	if err := getRequest(url, &data); err != nil {
 		return nil, nil, fmt.Errorf("Failed to fetch steam indexes. %w", err)
 	}
+
+	defIndexes := make(map[string]int, len(data))
+	paintIndexes := make(map[string]int, len(data))
 
 	for _, item := range data {
 		defIndexes[item.Weapon.Name] = item.Weapon.WeaponID
@@ -452,13 +425,14 @@ func getSteamIndexes(endpoint string) (map[string]int, map[string]int, error) {
 }
 
 func getSteamAgentIDs(endpoint string) (map[string]int, error) {
-	ids := make(map[string]int)
 	url := byMykelAPIBaseURL + endpoint
 
 	var data []Agent
 	if err := getRequest(url, &data); err != nil {
 		return nil, fmt.Errorf("Failed to fetch steam ids. %w", err)
 	}
+
+	ids := make(map[string]int, len(data))
 
 	for _, item := range data {
 		id, err := strconv.Atoi(item.DefIndex)
@@ -472,7 +446,6 @@ func getSteamAgentIDs(endpoint string) (map[string]int, error) {
 }
 
 func getSteamCollectibleIDs(endpoint string) (map[string]int, error) {
-	ids := make(map[string]int)
 	url := byMykelAPIBaseURL + endpoint
 
 	var data []Collectible
@@ -480,7 +453,9 @@ func getSteamCollectibleIDs(endpoint string) (map[string]int, error) {
 		return nil, fmt.Errorf("Failed to fetch steam ids. %w", err)
 	}
 
+	ids := make(map[string]int, len(data))
 	excludedPattern := `\b(Souvenir Token|2024 Souvenir Package|2025 Souvenir Package)\b`
+
 	for _, item := range data {
 		id, err := strconv.Atoi(item.DefIndex)
 
@@ -499,7 +474,6 @@ func getSteamCollectibleIDs(endpoint string) (map[string]int, error) {
 }
 
 func getSteamCrateIDs(endpoint string) (map[string]int, error) {
-	ids := make(map[string]int)
 	url := byMykelAPIBaseURL + endpoint
 
 	var data []Crate
@@ -507,7 +481,9 @@ func getSteamCrateIDs(endpoint string) (map[string]int, error) {
 		return nil, fmt.Errorf("Failed to fetch steam ids. %w", err)
 	}
 
+	ids := make(map[string]int, len(data))
 	excludedPattern := `\b(Sticker Collection|Patch Collection|Storage Unit)\b`
+
 	for _, item := range data {
 		idParts := strings.Split(item.ID, "-")
 
@@ -525,7 +501,6 @@ func getSteamCrateIDs(endpoint string) (map[string]int, error) {
 }
 
 func getSteamGraffitiIDs(endpoint string) (map[string]string, error) {
-	ids := make(map[string]string)
 	url := byMykelAPIBaseURL + endpoint
 
 	var data []Graffiti
@@ -533,6 +508,7 @@ func getSteamGraffitiIDs(endpoint string) (map[string]string, error) {
 		return nil, fmt.Errorf("Failed to fetch steam ids. %w", err)
 	}
 
+	ids := make(map[string]string, len(data))
 	excludedPattern := `\b(2019|2021|2022|2023|2024|2025)\b`
 
 	for _, item := range data {
@@ -549,13 +525,14 @@ func getSteamGraffitiIDs(endpoint string) (map[string]string, error) {
 }
 
 func getSteamHighlightIDs(endpoint string) (map[string]string, error) {
-	ids := make(map[string]string)
 	url := byMykelAPIBaseURL + endpoint
 
 	var data []Highlight
 	if err := getRequest(url, &data); err != nil {
 		return nil, fmt.Errorf("Failed to fetch steam ids. %w", err)
 	}
+
+	ids := make(map[string]string, len(data))
 
 	for _, item := range data {
 		ids[item.MarketHashName] = item.ID
@@ -565,13 +542,14 @@ func getSteamHighlightIDs(endpoint string) (map[string]string, error) {
 }
 
 func getSteamKeychainIDs(endpoint string) (map[string]int, error) {
-	ids := make(map[string]int)
 	url := byMykelAPIBaseURL + endpoint
 
 	var data []Keychain
 	if err := getRequest(url, &data); err != nil {
 		return nil, fmt.Errorf("Failed to fetch steam ids. %w", err)
 	}
+
+	ids := make(map[string]int, len(data))
 
 	for _, item := range data {
 		if item.DefIndex != nil {
@@ -587,13 +565,14 @@ func getSteamKeychainIDs(endpoint string) (map[string]int, error) {
 }
 
 func getSteamKeyIDs(endpoint string) (map[string]any, error) {
-	ids := make(map[string]any)
 	url := byMykelAPIBaseURL + endpoint
 
 	var data []Key
 	if err := getRequest(url, &data); err != nil {
 		return nil, fmt.Errorf("Failed to fetch steam ids. %w", err)
 	}
+
+	ids := make(map[string]any, len(data))
 
 	for _, item := range data {
 		marketHashName := item.MarketHashName
@@ -614,13 +593,14 @@ func getSteamKeyIDs(endpoint string) (map[string]any, error) {
 }
 
 func getSteamMusicKitIDs(endpoint string) (map[string]int, error) {
-	ids := make(map[string]int)
 	url := byMykelAPIBaseURL + endpoint
 
 	var data []MusicKit
 	if err := getRequest(url, &data); err != nil {
 		return nil, fmt.Errorf("Failed to fetch steam ids. %w", err)
 	}
+
+	ids := make(map[string]int, len(data))
 
 	for _, item := range data {
 		id, err := strconv.Atoi(item.DefIndex)
@@ -637,13 +617,14 @@ func getSteamMusicKitIDs(endpoint string) (map[string]int, error) {
 }
 
 func getSteamPatchIDs(endpoint string) (map[string]int, error) {
-	ids := make(map[string]int)
 	url := byMykelAPIBaseURL + endpoint
 
 	var data []Patch
 	if err := getRequest(url, &data); err != nil {
 		return nil, fmt.Errorf("Failed to fetch steam ids. %w", err)
 	}
+
+	ids := make(map[string]int, len(data))
 
 	for _, item := range data {
 		id, err := strconv.Atoi(item.DefIndex)
@@ -657,7 +638,6 @@ func getSteamPatchIDs(endpoint string) (map[string]int, error) {
 }
 
 func getSteamStickerIDs(endpoint string) (map[string]int, error) {
-	ids := make(map[string]int)
 	url := byMykelAPIBaseURL + endpoint
 
 	var data []Sticker
@@ -679,6 +659,8 @@ func getSteamStickerIDs(endpoint string) (map[string]int, error) {
 		"Sticker | The Leader (Foil)":                  {},
 	}
 
+	ids := make(map[string]int, len(data))
+
 	for _, item := range data {
 		id, err := strconv.Atoi(item.DefIndex)
 
@@ -696,7 +678,6 @@ func getSteamStickerIDs(endpoint string) (map[string]int, error) {
 }
 
 func getSteamMarketIDs(marketplace string) (map[string]int, error) {
-	ids := make(map[string]int)
 	url := ericZhuAPIBaseURL + marketplace + counterStrikeJSON
 
 	var data map[string]struct {
@@ -708,6 +689,8 @@ func getSteamMarketIDs(marketplace string) (map[string]int, error) {
 	if err := getRequest(url, &data); err != nil {
 		return nil, fmt.Errorf("Failed to fetch market ids. %w", err)
 	}
+
+	ids := make(map[string]int, len(data))
 
 	for name, item := range data {
 		enName := item.EnName
@@ -729,8 +712,8 @@ func getChineseMarketIDs(marketplace string) (map[string]int, error) {
 		return nil, fmt.Errorf("Failed to fetch chinese market ids. %w", err)
 	}
 
-	for name, value := range data {
-		if value == -1 {
+	for name, id := range data {
+		if id == -1 {
 			delete(data, name)
 		}
 		if _, exists := defIndexes[name]; exists {
@@ -741,14 +724,7 @@ func getChineseMarketIDs(marketplace string) (map[string]int, error) {
 	return data, nil
 }
 
-func getModestSerhatIDs(marketplace string) (map[string]int, map[string]int, map[string]Buff163PaintseedGroupIDS, map[string]Buff163PhaseIDS, map[string]map[string]*int, map[string]int, map[string]map[string][]int, error) {
-	buffMarketIDs := make(map[string]int)
-	buff163StickerIDs := make(map[string]int)
-	buff163PaintseedGroupIDs := make(map[string]Buff163PaintseedGroupIDS)
-	buff163PhaseIDs := make(map[string]Buff163PhaseIDS)
-	buff163TagIDs := make(map[string]map[string]*int)
-	buff163PatchIDs := make(map[string]int)
-
+func getModestSerhatIDs(marketplace string) (map[string]int, map[string]int, map[string]map[string]int, map[string]map[string]int, map[string]map[string]int, map[string]int, map[string]map[string][]int, error) {
 	url := modestSerhatAPIBaseURL + marketplace
 
 	var data ModestSerhatResponse
@@ -756,31 +732,63 @@ func getModestSerhatIDs(marketplace string) (map[string]int, map[string]int, map
 		return nil, nil, nil, nil, nil, nil, nil, fmt.Errorf("Failed to fetch buff market ids. %w", err)
 	}
 
-	for name, value := range data.Items {
-		buffMarketID := value.BuffMarketGoodsID
-		buff163StickerID := value.Buff163StickerID
-		buff163PaintseedGroupID := value.Buff163PaintSeedGroupIDs
-		buff163PhaseID := value.Buff163PhaseIDs
-		buff163TagID := value.Buff163TagIDs
-		buff163PatchID := value.Buff163PatchID
+	buffMarketIDs := make(map[string]int, len(data.Items))
+	buff163StickerIDs := make(map[string]int, len(data.Items))
+	buff163PaintseedGroupIDs := make(map[string]map[string]int)
+	buff163PhaseIDs := make(map[string]map[string]int)
+	buff163TagIDs := make(map[string]map[string]int)
+	buff163PatchIDs := make(map[string]int, len(data.Items))
 
-		if buffMarketID != nil {
-			buffMarketIDs[name] = *buffMarketID
+	for name, item := range data.Items {
+		if id := item.BuffMarketGoodsID; id != nil {
+			buffMarketIDs[name] = *id
 		}
-		if buff163StickerID != nil {
-			buff163StickerIDs[name] = *buff163StickerID
+
+		if id := item.Buff163StickerID; id != nil {
+			buff163StickerIDs[name] = *id
 		}
-		if buff163PaintseedGroupID != nil {
-			buff163PaintseedGroupIDs[name] = *buff163PaintseedGroupID
+
+		if groups := item.Buff163PaintSeedGroupIDs; groups != nil {
+			m := buff163PaintseedGroupIDs[name]
+			if m == nil {
+				m = make(map[string]int, len(*groups))
+				buff163PaintseedGroupIDs[name] = m
+			}
+			for group, id := range *groups {
+				if id != nil {
+					m[group] = *id
+				}
+			}
 		}
-		if buff163PhaseID != nil {
-			buff163PhaseIDs[name] = *buff163PhaseID
+
+		if phases := item.Buff163PhaseIDs; phases != nil {
+			m := buff163PhaseIDs[name]
+			if m == nil {
+				m = make(map[string]int, len(*phases))
+				buff163PhaseIDs[name] = m
+			}
+			for phase, id := range *phases {
+				if id != nil {
+					m[phase] = *id
+				}
+			}
 		}
-		if buff163TagID != nil {
-			buff163TagIDs[name] = buff163TagID
+
+		if tags := item.Buff163TagIDs; tags != nil {
+			m := buff163TagIDs[name]
+			if m == nil {
+				m = make(map[string]int, len(*tags))
+				buff163TagIDs[name] = m
+			}
+			for tag, id := range *tags {
+				if id != nil {
+					m[tag] = *id
+				}
+			}
 		}
-		if buff163PatchID != nil {
-			buff163PatchIDs[name] = *buff163PatchID
+
+		if id := item.Buff163PatchID; id != nil {
+			buff163PatchIDs[name] = *id
 		}
 	}
 
@@ -869,9 +877,9 @@ func main() {
 	var steamStickerIDs map[string]int
 	var buffMarketIDs map[string]int
 	var buff163StickerIDs map[string]int
-	var buff163PaintseedGroupIDs map[string]Buff163PaintseedGroupIDS
-	var buff163PhaseIDs map[string]Buff163PhaseIDS
-	var buff163TagIDs map[string]map[string]*int
+	var buff163PaintseedGroupIDs map[string]map[string]int
+	var buff163PhaseIDs map[string]map[string]int
+	var buff163TagIDs map[string]map[string]int
 	var buff163PatchIDs map[string]int
 	var buff163Patterns map[string]map[string][]int
 
