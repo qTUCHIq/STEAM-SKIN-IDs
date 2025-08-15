@@ -22,8 +22,10 @@ import (
 const (
 	byMykelAPIBaseURL = "https://raw.githubusercontent.com/ByMykel/CSGO-API/main/public/api/en/"
 
-	ericZhuAPIBaseURL = "https://raw.githubusercontent.com/EricZhu-42/SteamTradingSite-ID-Mapper/refs/heads/main/"
+	ericZhuAPIBaseURL = "https://raw.githubusercontent.com/EricZhu-42/SteamTradingSite-ID-Mapper/main/"
 	counterStrikeJSON = "/730.json"
+
+	modestSerhatAPIBaseURL = "https://raw.githubusercontent.com/ModestSerhat/cs2-marketplace-ids/main/"
 )
 
 var (
@@ -37,7 +39,7 @@ var (
 	}
 
 	defaultHeaders = http.Header{
-		"User-Agent":      {"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36"},
+		"User-Agent":      {"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36"},
 		"Accept":          {"*/*"},
 		"Accept-encoding": {"gzip, deflate, br, zstd"},
 		"Priority":        {"u=1"},
@@ -46,10 +48,46 @@ var (
 	defIndexes map[string]int
 )
 
-type MarketItemID struct {
-	CnName string `json:"cn_name"`
-	EnName string `json:"en_name"`
-	NameID int    `json:"name_id"`
+type ModestSerhatResponse struct {
+	Items    map[string]Item             `json:"items"`
+	Patterns map[string]map[string][]int `json:"patterns"`
+}
+
+type Item struct {
+	Buff163GoodsID           *int                      `json:"buff163_goods_id,omitempty"`
+	YoupinID                 *int                      `json:"youpin_id,omitempty"`
+	BuffMarketGoodsID        *int                      `json:"buffmarket_goods_id,omitempty"`
+	Buff163StickerID         *int                      `json:"buff163_sticker_id,omitempty"`
+	Buff163PaintSeedGroupIDs *Buff163PaintseedGroupIDS `json:"buff163_paintseed_group_ids,omitempty"`
+	DoublespaceName          *string                   `json:"doublespace_name,omitempty"`
+	Buff163PhaseIDs          *Buff163PhaseIDS          `json:"buff163_phase_ids,omitempty"`
+	Buff163TagIDs            map[string]*int           `json:"buff163_tag_ids,omitempty"`
+	Buff163PatchID           *int                      `json:"buff163_patch_id,omitempty"`
+}
+
+type Buff163PaintseedGroupIDS struct {
+	SmileFace     *int `json:"Smile Face,omitempty"`
+	MuscleMan     *int `json:"Muscle Man,omitempty"`
+	SurprisedFace *int `json:"Surprised Face,omitempty"`
+	FunnyFace     *int `json:"Funny Face,omitempty"`
+	AwkwardFace   *int `json:"Awkward Face,omitempty"`
+	Togepi        *int `json:"Togepi,omitempty"`
+	BlueGem       *int `json:"Blue Gem,omitempty"`
+}
+
+type Buff163PhaseIDS struct {
+	Ruby       *int `json:"Ruby"`
+	Sapphire   *int `json:"Sapphire,omitempty"`
+	BlackPearl *int `json:"Black Pearl"`
+	Phase1     *int `json:"Phase 1"`
+	Phase2     *int `json:"Phase 2"`
+	Phase3     *int `json:"Phase 3"`
+	Phase4     *int `json:"Phase 4"`
+	Emerald    *int `json:"Emerald"`
+}
+
+type CaseHardened struct {
+	BlueGem []int `json:"Blue Gem"`
 }
 
 type Agent struct {
@@ -661,7 +699,12 @@ func getSteamMarketIDs(marketplace string) (map[string]int, error) {
 	ids := make(map[string]int)
 	url := ericZhuAPIBaseURL + marketplace + counterStrikeJSON
 
-	var data map[string]MarketItemID
+	var data map[string]struct {
+		CnName string `json:"cn_name"`
+		EnName string `json:"en_name"`
+		NameID int    `json:"name_id"`
+	}
+
 	if err := getRequest(url, &data); err != nil {
 		return nil, fmt.Errorf("Failed to fetch market ids. %w", err)
 	}
@@ -686,16 +729,62 @@ func getChineseMarketIDs(marketplace string) (map[string]int, error) {
 		return nil, fmt.Errorf("Failed to fetch chinese market ids. %w", err)
 	}
 
-	for key, value := range data {
+	for name, value := range data {
 		if value == -1 {
-			delete(data, key)
+			delete(data, name)
 		}
-		if _, exists := defIndexes[key]; exists {
-			delete(data, key)
+		if _, exists := defIndexes[name]; exists {
+			delete(data, name)
 		}
 	}
 
 	return data, nil
+}
+
+func getModestSerhatIDs(marketplace string) (map[string]int, map[string]int, map[string]Buff163PaintseedGroupIDS, map[string]Buff163PhaseIDS, map[string]map[string]*int, map[string]int, map[string]map[string][]int, error) {
+	buffMarketIDs := make(map[string]int)
+	buff163StickerIDs := make(map[string]int)
+	buff163PaintseedGroupIDs := make(map[string]Buff163PaintseedGroupIDS)
+	buff163PhaseIDs := make(map[string]Buff163PhaseIDS)
+	buff163TagIDs := make(map[string]map[string]*int)
+	buff163PatchIDs := make(map[string]int)
+
+	url := modestSerhatAPIBaseURL + marketplace
+
+	var data ModestSerhatResponse
+	if err := getRequest(url, &data); err != nil {
+		return nil, nil, nil, nil, nil, nil, nil, fmt.Errorf("Failed to fetch buff market ids. %w", err)
+	}
+
+	for name, value := range data.Items {
+		buffMarketID := value.BuffMarketGoodsID
+		buff163StickerID := value.Buff163StickerID
+		buff163PaintseedGroupID := value.Buff163PaintSeedGroupIDs
+		buff163PhaseID := value.Buff163PhaseIDs
+		buff163TagID := value.Buff163TagIDs
+		buff163PatchID := value.Buff163PatchID
+
+		if buffMarketID != nil {
+			buffMarketIDs[name] = *buffMarketID
+		}
+		if buff163StickerID != nil {
+			buff163StickerIDs[name] = *buff163StickerID
+		}
+		if buff163PaintseedGroupID != nil {
+			buff163PaintseedGroupIDs[name] = *buff163PaintseedGroupID
+		}
+		if buff163PhaseID != nil {
+			buff163PhaseIDs[name] = *buff163PhaseID
+		}
+		if buff163TagID != nil {
+			buff163TagIDs[name] = buff163TagID
+		}
+		if buff163PatchID != nil {
+			buff163PatchIDs[name] = *buff163PatchID
+		}
+	}
+
+	return buffMarketIDs, buff163StickerIDs, buff163PaintseedGroupIDs, buff163PhaseIDs, buff163TagIDs, buff163PatchIDs, data.Patterns, nil
 }
 
 func saveData[T any](data map[string]T, filePath string, isPretty bool) {
@@ -750,11 +839,13 @@ func saveDataAsync[T any](wg *sync.WaitGroup, data map[string]T, basePath string
 
 func main() {
 	dirs := []string{
-		"./mini/grouped_ids",
-		"./mini/indexes",
+		"./mini/buff163_grouped_ids",
+		"./mini/steam_grouped_ids",
+		"./mini/steam_indexes",
 		"./mini/market_ids",
-		"./pretty/grouped_ids",
-		"./pretty/indexes",
+		"./pretty/buff163_grouped_ids",
+		"./pretty/steam_grouped_ids",
+		"./pretty/steam_indexes",
 		"./pretty/market_ids",
 	}
 
@@ -776,10 +867,17 @@ func main() {
 	var steamMusicKitIDs map[string]int
 	var steamPatchIDs map[string]int
 	var steamStickerIDs map[string]int
+	var buffMarketIDs map[string]int
+	var buff163StickerIDs map[string]int
+	var buff163PaintseedGroupIDs map[string]Buff163PaintseedGroupIDS
+	var buff163PhaseIDs map[string]Buff163PhaseIDS
+	var buff163TagIDs map[string]map[string]*int
+	var buff163PatchIDs map[string]int
+	var buff163Patterns map[string]map[string][]int
 
-	errs := make(chan error, 11)
+	errs := make(chan error, 12)
 	var wg sync.WaitGroup
-	wg.Add(11)
+	wg.Add(12)
 
 	go func() {
 		defer wg.Done()
@@ -890,6 +988,16 @@ func main() {
 		}
 	}()
 
+	go func() {
+		defer wg.Done()
+		var err error
+		buffMarketIDs, buff163StickerIDs, buff163PaintseedGroupIDs, buff163PhaseIDs, buff163TagIDs, buff163PatchIDs, buff163Patterns, err = getModestSerhatIDs("cs2_marketplaceids.json")
+		if err != nil {
+			errs <- err
+			return
+		}
+	}()
+
 	wg.Wait()
 	close(errs)
 
@@ -936,25 +1044,33 @@ func main() {
 		fmt.Println("Error during API fetch. ", err)
 	}
 
-	saveDataAsync(&wg, defIndexes, "indexes/def_indexes.json")
-	saveDataAsync(&wg, paintIndexes, "indexes/paint_indexes.json")
+	saveDataAsync(&wg, defIndexes, "steam_indexes/def_indexes.json")
+	saveDataAsync(&wg, paintIndexes, "steam_indexes/paint_indexes.json")
 
-	saveDataAsync(&wg, steamAgentIDs, "grouped_ids/agents.json")
-	saveDataAsync(&wg, steamCollectibleIDs, "grouped_ids/collectibles.json")
-	saveDataAsync(&wg, steamCrateIDs, "grouped_ids/crates.json")
-	saveDataAsync(&wg, steamGraffitiIDs, "grouped_ids/graffiti.json")
-	saveDataAsync(&wg, steamHighlightIDs, "grouped_ids/highlights.json")
-	saveDataAsync(&wg, steamKeychainIDs, "grouped_ids/keychains.json")
-	saveDataAsync(&wg, steamKeyIDs, "grouped_ids/keys.json")
-	saveDataAsync(&wg, steamMusicKitIDs, "grouped_ids/music_kits.json")
-	saveDataAsync(&wg, steamPatchIDs, "grouped_ids/patches.json")
-	saveDataAsync(&wg, steamStickerIDs, "grouped_ids/stickers.json")
+	saveDataAsync(&wg, steamAgentIDs, "steam_grouped_ids/agents.json")
+	saveDataAsync(&wg, steamCollectibleIDs, "steam_grouped_ids/collectibles.json")
+	saveDataAsync(&wg, steamCrateIDs, "steam_grouped_ids/crates.json")
+	saveDataAsync(&wg, steamGraffitiIDs, "steam_grouped_ids/graffiti.json")
+	saveDataAsync(&wg, steamHighlightIDs, "steam_grouped_ids/highlights.json")
+	saveDataAsync(&wg, steamKeychainIDs, "steam_grouped_ids/keychains.json")
+	saveDataAsync(&wg, steamKeyIDs, "steam_grouped_ids/keys.json")
+	saveDataAsync(&wg, steamMusicKitIDs, "steam_grouped_ids/music_kits.json")
+	saveDataAsync(&wg, steamPatchIDs, "steam_grouped_ids/patches.json")
+	saveDataAsync(&wg, steamStickerIDs, "steam_grouped_ids/stickers.json")
 
 	saveDataAsync(&wg, steamMarketIDs, "market_ids/steam.json")
 	saveDataAsync(&wg, chineseMarketIDs["buff"], "market_ids/buff163.json")
 	saveDataAsync(&wg, chineseMarketIDs["c5"], "market_ids/c5game.json")
 	saveDataAsync(&wg, chineseMarketIDs["uuyp"], "market_ids/youpin898.json")
 	saveDataAsync(&wg, chineseMarketIDs["igxe"], "market_ids/igxe.json")
+	saveDataAsync(&wg, buffMarketIDs, "market_ids/buff_market.json")
+
+	saveDataAsync(&wg, buff163StickerIDs, "buff163_grouped_ids/stickers.json")
+	saveDataAsync(&wg, buff163PaintseedGroupIDs, "buff163_grouped_ids/paintseed_group_ids.json")
+	saveDataAsync(&wg, buff163PhaseIDs, "buff163_grouped_ids/phases.json")
+	saveDataAsync(&wg, buff163TagIDs, "buff163_grouped_ids/tags.json")
+	saveDataAsync(&wg, buff163PatchIDs, "buff163_grouped_ids/patches.json")
+	saveDataAsync(&wg, buff163Patterns, "buff163_grouped_ids/patterns.json")
 
 	wg.Wait()
 }
