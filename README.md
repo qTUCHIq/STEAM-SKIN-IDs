@@ -1,13 +1,14 @@
 <h1 align="center">STEAM-SKIN-IDs</h1>
-A comprehensive list of CS2 skin IDs for Steam, BUFF.163, C5game, YouPin898, and IGXE. Includes available def_indexes, paint_indexes and IDs grouped into different categories.
+A comprehensive list of CS2 skin IDs for Steam, BUFF.163, BUFF.MARKET, C5game, YouPin898, and IGXE. Includes available def_indexes, paint_indexes and IDs grouped into different categories.
 This repository is used for developing https://wskins.ru
 
 ## Acknowledgements
 
 This project heavily relies on the work of:
 
-- [ByMykel/CSGO-API](https://github.com/ByMykel/CSGO-API) by [ByMykel](https://github.com/ByMykel)
-- [EricZhu-42/SteamTradingSite-ID-Mapper](https://github.com/EricZhu-42/SteamTradingSite-ID-Mapper) by [EricZhu-42](https://github.com/EricZhu-42)
+- [CSGO-API](https://github.com/ByMykel/CSGO-API) by [ByMykel](https://github.com/ByMykel)
+- [SteamTradingSite ID Mapper](https://github.com/EricZhu-42/SteamTradingSite-ID-Mapper) by [EricZhu-42](https://github.com/EricZhu-42)
+- [CS2 Marketplace IDs](https://github.com/ModestSerhat/cs2-marketplace-ids) by [ModestSerhat](https://github.com/ModestSerhat)
 
 A huge thank you to the original authors for their efforts and for making their work public.
 
@@ -24,43 +25,62 @@ GET https://raw.githubusercontent.com/qTUCHIq/STEAM-SKIN-IDs/main/{format}/{cate
 
 ## Available Data
 
-### Indexes
+### Steam Indexes
 ```
-https://raw.githubusercontent.com/qTUCHIq/STEAM-SKIN-IDs/main/mini/indexes/def_indexes.json
-```
-```
-https://raw.githubusercontent.com/qTUCHIq/STEAM-SKIN-IDs/main/mini/indexes/paint_indexes.json
-```
-### Grouped IDs
-```
-https://raw.githubusercontent.com/qTUCHIq/STEAM-SKIN-IDs/main/mini/grouped_ids/agents.json
+https://raw.githubusercontent.com/qTUCHIq/STEAM-SKIN-IDs/main/mini/steam_indexes/def_indexes.json
 ```
 ```
-https://raw.githubusercontent.com/qTUCHIq/STEAM-SKIN-IDs/main/mini/grouped_ids/collectibles.json
+https://raw.githubusercontent.com/qTUCHIq/STEAM-SKIN-IDs/main/mini/steam_indexes/paint_indexes.json
+```
+### Steam Grouped IDs
+```
+https://raw.githubusercontent.com/qTUCHIq/STEAM-SKIN-IDs/main/mini/steam_grouped_ids/agents.json
 ```
 ```
-https://raw.githubusercontent.com/qTUCHIq/STEAM-SKIN-IDs/main/mini/grouped_ids/crates.json
+https://raw.githubusercontent.com/qTUCHIq/STEAM-SKIN-IDs/main/mini/steam_grouped_ids/collectibles.json
 ```
 ```
-https://raw.githubusercontent.com/qTUCHIq/STEAM-SKIN-IDs/main/mini/grouped_ids/graffiti.json
+https://raw.githubusercontent.com/qTUCHIq/STEAM-SKIN-IDs/main/mini/steam_grouped_ids/crates.json
 ```
 ```
-https://raw.githubusercontent.com/qTUCHIq/STEAM-SKIN-IDs/main/mini/grouped_ids/highlights.json
+https://raw.githubusercontent.com/qTUCHIq/STEAM-SKIN-IDs/main/mini/steam_grouped_ids/graffiti.json
 ```
 ```
-https://raw.githubusercontent.com/qTUCHIq/STEAM-SKIN-IDs/main/mini/grouped_ids/keychains.json
+https://raw.githubusercontent.com/qTUCHIq/STEAM-SKIN-IDs/main/mini/steam_grouped_ids/highlights.json
 ```
 ```
-https://raw.githubusercontent.com/qTUCHIq/STEAM-SKIN-IDs/main/mini/grouped_ids/keys.json
+https://raw.githubusercontent.com/qTUCHIq/STEAM-SKIN-IDs/main/mini/steam_grouped_ids/keychains.json
 ```
 ```
-https://raw.githubusercontent.com/qTUCHIq/STEAM-SKIN-IDs/main/mini/grouped_ids/music_kits.json
+https://raw.githubusercontent.com/qTUCHIq/STEAM-SKIN-IDs/main/mini/steam_grouped_ids/keys.json
 ```
 ```
-https://raw.githubusercontent.com/qTUCHIq/STEAM-SKIN-IDs/main/mini/grouped_ids/patches.json
+https://raw.githubusercontent.com/qTUCHIq/STEAM-SKIN-IDs/main/mini/steam_grouped_ids/music_kits.json
 ```
 ```
-https://raw.githubusercontent.com/qTUCHIq/STEAM-SKIN-IDs/main/mini/grouped_ids/stickers.json
+https://raw.githubusercontent.com/qTUCHIq/STEAM-SKIN-IDs/main/mini/steam_grouped_ids/patches.json
+```
+```
+https://raw.githubusercontent.com/qTUCHIq/STEAM-SKIN-IDs/main/mini/steam_grouped_ids/stickers.json
+```
+### BUFF.163 Grouped IDs
+```
+https://raw.githubusercontent.com/qTUCHIq/STEAM-SKIN-IDs/main/mini/buff163_grouped_ids/paintseed_group_ids.json
+```
+```
+https://raw.githubusercontent.com/qTUCHIq/STEAM-SKIN-IDs/main/mini/buff163_grouped_ids/patches.json
+```
+```
+https://raw.githubusercontent.com/qTUCHIq/STEAM-SKIN-IDs/main/mini/buff163_grouped_ids/patterns.json
+```
+```
+https://raw.githubusercontent.com/qTUCHIq/STEAM-SKIN-IDs/main/mini/buff163_grouped_ids/phases.json
+```
+```
+https://raw.githubusercontent.com/qTUCHIq/STEAM-SKIN-IDs/main/mini/buff163_grouped_ids/stickers.json
+```
+```
+https://raw.githubusercontent.com/qTUCHIq/STEAM-SKIN-IDs/main/mini/buff163_grouped_ids/tags.json
 ```
 ### Market IDs
 ```
@@ -68,6 +88,9 @@ https://raw.githubusercontent.com/qTUCHIq/STEAM-SKIN-IDs/main/mini/market_ids/st
 ```
 ```
 https://raw.githubusercontent.com/qTUCHIq/STEAM-SKIN-IDs/main/mini/market_ids/buff163.json
+```
+```
+https://raw.githubusercontent.com/qTUCHIq/STEAM-SKIN-IDs/main/mini/market_ids/buff_market.json
 ```
 ```
 https://raw.githubusercontent.com/qTUCHIq/STEAM-SKIN-IDs/main/mini/market_ids/c5game.json
