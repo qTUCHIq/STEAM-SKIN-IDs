@@ -3,6 +3,7 @@ package main
 import (
 	"compress/gzip"
 	"compress/zlib"
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -29,19 +30,22 @@ const (
 )
 
 var (
+	ctx = context.Background()
+
 	defaultHttpClient = &http.Client{
 		Timeout: 10 * time.Second,
 		Transport: &http.Transport{
-			MaxIdleConns:        20,
-			MaxIdleConnsPerHost: 20,
-			IdleConnTimeout:     10 * time.Second,
+			MaxIdleConns:        100,
+			MaxIdleConnsPerHost: 100,
+			IdleConnTimeout:     30 * time.Second,
 		},
 	}
 
 	defaultHeaders = http.Header{
 		"User-Agent":      {"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36"},
-		"Accept":          {"*/*"},
+		"Accept":          {"application/json, */*"},
 		"Accept-encoding": {"gzip, deflate, br, zstd"},
+		"Connection":      {"keep-alive"},
 		"Priority":        {"u=1"},
 	}
 
@@ -293,9 +297,9 @@ type Skin struct {
 		ID   string `json:"id"`
 		Name string `json:"name"`
 	} `json:"team"`
-	LegacyModel  bool   `json:"legacy_model"`
-	Image        string `json:"image"`
-	Phase        string `json:"phase"`
+	LegacyModel  bool    `json:"legacy_model"`
+	Image        string  `json:"image"`
+	Phase        *string `json:"phase"`
 	SpecialNotes []struct {
 		Source string `json:"source"`
 		Text   string `json:"text"`
@@ -330,13 +334,13 @@ type Sticker struct {
 	} `json:"special_notes"`
 }
 
-func getRequest(url string, target any) error {
-	request, err := http.NewRequest("GET", url, nil)
+func getRequest(ctx context.Context, url string, target any) error {
+	request, err := http.NewRequestWithContext(ctx, "GET", url, nil)
 	if err != nil {
 		return fmt.Errorf("Failed to create request for URL %s: %w", url, err)
 	}
 
-	request.Header = defaultHeaders
+	request.Header = defaultHeaders.Clone()
 
 	response, err := defaultHttpClient.Do(request)
 	if err != nil {
@@ -356,12 +360,7 @@ func getRequest(url string, target any) error {
 
 	defer bodyReader.Close()
 
-	body, err := io.ReadAll(bodyReader)
-	if err != nil {
-		return fmt.Errorf("Failed to read response body for URL %s: %w", url, err)
-	}
-
-	if err := json.Unmarshal(body, target); err != nil {
+	if err := json.NewDecoder(bodyReader).Decode(target); err != nil {
 		return fmt.Errorf("Failed to unmarshal response body for URL %s: %w", url, err)
 	}
 
@@ -404,7 +403,7 @@ func getSteamIndexes(endpoint string) (map[string]int, map[string]int, error) {
 	url := byMykelAPIBaseURL + endpoint
 
 	var data []Skin
-	if err := getRequest(url, &data); err != nil {
+	if err := getRequest(ctx, url, &data); err != nil {
 		return nil, nil, fmt.Errorf("Failed to fetch steam indexes. %w", err)
 	}
 
@@ -412,12 +411,39 @@ func getSteamIndexes(endpoint string) (map[string]int, map[string]int, error) {
 	paintIndexes := make(map[string]int, len(data))
 
 	for _, item := range data {
-		defIndexes[item.Weapon.Name] = item.Weapon.WeaponID
-		if item.Pattern != nil {
-			paintIndex, err := strconv.Atoi(*item.PaintIndex)
-			if err == nil {
-				paintIndexes[item.Pattern.Name] = paintIndex
-			}
+		defName := item.Weapon.Name
+
+		defIndexes[defName] = item.Weapon.WeaponID
+
+		if item.PaintIndex == nil {
+			continue
+		}
+
+		paintIndex, err := strconv.Atoi(*item.PaintIndex)
+		if err != nil {
+			continue
+		}
+
+		paint := item.Pattern.Name
+
+		var baseKeyBuilder strings.Builder
+		baseKeyBuilder.Grow(len(defName) + 3 + len(paint))
+		baseKeyBuilder.WriteString(defName)
+		baseKeyBuilder.WriteString(" | ")
+		baseKeyBuilder.WriteString(paint)
+		baseKey := baseKeyBuilder.String()
+
+		if item.Phase != nil {
+			var keyBuilder strings.Builder
+			keyBuilder.Grow(len(baseKey) + 1 + len(*item.Phase))
+			keyBuilder.WriteString(baseKey)
+			keyBuilder.WriteByte(' ')
+			keyBuilder.WriteString(*item.Phase)
+			phaseKey := keyBuilder.String()
+
+			paintIndexes[phaseKey] = paintIndex
+		} else {
+			paintIndexes[baseKey] = paintIndex
 		}
 	}
 
@@ -428,7 +454,7 @@ func getSteamAgentIDs(endpoint string) (map[string]int, error) {
 	url := byMykelAPIBaseURL + endpoint
 
 	var data []Agent
-	if err := getRequest(url, &data); err != nil {
+	if err := getRequest(ctx, url, &data); err != nil {
 		return nil, fmt.Errorf("Failed to fetch steam ids. %w", err)
 	}
 
@@ -449,7 +475,7 @@ func getSteamCollectibleIDs(endpoint string) (map[string]int, error) {
 	url := byMykelAPIBaseURL + endpoint
 
 	var data []Collectible
-	if err := getRequest(url, &data); err != nil {
+	if err := getRequest(ctx, url, &data); err != nil {
 		return nil, fmt.Errorf("Failed to fetch steam ids. %w", err)
 	}
 
@@ -477,7 +503,7 @@ func getSteamCrateIDs(endpoint string) (map[string]int, error) {
 	url := byMykelAPIBaseURL + endpoint
 
 	var data []Crate
-	if err := getRequest(url, &data); err != nil {
+	if err := getRequest(ctx, url, &data); err != nil {
 		return nil, fmt.Errorf("Failed to fetch steam ids. %w", err)
 	}
 
@@ -504,7 +530,7 @@ func getSteamGraffitiIDs(endpoint string) (map[string]string, error) {
 	url := byMykelAPIBaseURL + endpoint
 
 	var data []Graffiti
-	if err := getRequest(url, &data); err != nil {
+	if err := getRequest(ctx, url, &data); err != nil {
 		return nil, fmt.Errorf("Failed to fetch steam ids. %w", err)
 	}
 
@@ -528,7 +554,7 @@ func getSteamHighlightIDs(endpoint string) (map[string]string, error) {
 	url := byMykelAPIBaseURL + endpoint
 
 	var data []Highlight
-	if err := getRequest(url, &data); err != nil {
+	if err := getRequest(ctx, url, &data); err != nil {
 		return nil, fmt.Errorf("Failed to fetch steam ids. %w", err)
 	}
 
@@ -545,7 +571,7 @@ func getSteamKeychainIDs(endpoint string) (map[string]int, error) {
 	url := byMykelAPIBaseURL + endpoint
 
 	var data []Keychain
-	if err := getRequest(url, &data); err != nil {
+	if err := getRequest(ctx, url, &data); err != nil {
 		return nil, fmt.Errorf("Failed to fetch steam ids. %w", err)
 	}
 
@@ -568,7 +594,7 @@ func getSteamKeyIDs(endpoint string) (map[string]any, error) {
 	url := byMykelAPIBaseURL + endpoint
 
 	var data []Key
-	if err := getRequest(url, &data); err != nil {
+	if err := getRequest(ctx, url, &data); err != nil {
 		return nil, fmt.Errorf("Failed to fetch steam ids. %w", err)
 	}
 
@@ -596,7 +622,7 @@ func getSteamMusicKitIDs(endpoint string) (map[string]int, error) {
 	url := byMykelAPIBaseURL + endpoint
 
 	var data []MusicKit
-	if err := getRequest(url, &data); err != nil {
+	if err := getRequest(ctx, url, &data); err != nil {
 		return nil, fmt.Errorf("Failed to fetch steam ids. %w", err)
 	}
 
@@ -620,7 +646,7 @@ func getSteamPatchIDs(endpoint string) (map[string]int, error) {
 	url := byMykelAPIBaseURL + endpoint
 
 	var data []Patch
-	if err := getRequest(url, &data); err != nil {
+	if err := getRequest(ctx, url, &data); err != nil {
 		return nil, fmt.Errorf("Failed to fetch steam ids. %w", err)
 	}
 
@@ -641,7 +667,7 @@ func getSteamStickerIDs(endpoint string) (map[string]int, error) {
 	url := byMykelAPIBaseURL + endpoint
 
 	var data []Sticker
-	if err := getRequest(url, &data); err != nil {
+	if err := getRequest(ctx, url, &data); err != nil {
 		return nil, fmt.Errorf("Failed to fetch steam ids. %w", err)
 	}
 
@@ -686,7 +712,7 @@ func getSteamMarketIDs(marketplace string) (map[string]int, error) {
 		NameID int    `json:"name_id"`
 	}
 
-	if err := getRequest(url, &data); err != nil {
+	if err := getRequest(ctx, url, &data); err != nil {
 		return nil, fmt.Errorf("Failed to fetch market ids. %w", err)
 	}
 
@@ -708,7 +734,7 @@ func getChineseMarketIDs(marketplace string) (map[string]int, error) {
 	url := ericZhuAPIBaseURL + marketplace + counterStrikeJSON
 
 	var data map[string]int
-	if err := getRequest(url, &data); err != nil {
+	if err := getRequest(ctx, url, &data); err != nil {
 		return nil, fmt.Errorf("Failed to fetch chinese market ids. %w", err)
 	}
 
@@ -728,7 +754,7 @@ func getModestSerhatIDs(marketplace string) (map[string]int, map[string]int, map
 	url := modestSerhatAPIBaseURL + marketplace
 
 	var data ModestSerhatResponse
-	if err := getRequest(url, &data); err != nil {
+	if err := getRequest(ctx, url, &data); err != nil {
 		return nil, nil, nil, nil, nil, nil, nil, fmt.Errorf("Failed to fetch buff market ids. %w", err)
 	}
 
