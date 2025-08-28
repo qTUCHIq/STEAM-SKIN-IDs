@@ -113,7 +113,12 @@ type Crate struct {
 	Description   *string `json:"description"`
 	Type          *string `json:"type"`
 	FirstSaleDate *string `json:"first_sale_date"`
-	Contains      []struct {
+	Rarity        struct {
+		ID    string `json:"id"`
+		Name  string `json:"name"`
+		Color string `json:"color"`
+	} `json:"rarity"`
+	Contains []struct {
 		ID     string `json:"id"`
 		Name   string `json:"name"`
 		Rarity struct {
@@ -165,7 +170,7 @@ type Graffiti struct {
 		Name  string `json:"name"`
 		Image string `json:"image"`
 	} `json:"crates"`
-	MarketHashName string  `json:"market_hash_name"`
+	MarketHashName *string `json:"market_hash_name"`
 	Image          string  `json:"image"`
 	DefIndex       *string `json:"def_index"`
 	SpecialNotes   []struct {
@@ -480,7 +485,6 @@ func getSteamCollectibleIDs(endpoint string) (map[string]int, error) {
 	}
 
 	ids := make(map[string]int, len(data))
-	excludedPattern := `\b(Souvenir Token|2024 Souvenir Package|2025 Souvenir Package)\b`
 
 	for _, item := range data {
 		id, err := strconv.Atoi(item.DefIndex)
@@ -488,10 +492,7 @@ func getSteamCollectibleIDs(endpoint string) (map[string]int, error) {
 		if err == nil {
 			marketHashName := item.MarketHashName
 			if marketHashName != nil {
-				isExcluded, _ := regexp.MatchString(excludedPattern, *marketHashName)
-				if !isExcluded {
-					ids[*marketHashName] = id
-				}
+				ids[*marketHashName] = id
 			}
 		}
 	}
@@ -535,15 +536,13 @@ func getSteamGraffitiIDs(endpoint string) (map[string]string, error) {
 	}
 
 	ids := make(map[string]string, len(data))
-	excludedPattern := `\b(2019|2021|2022|2023|2024|2025)\b`
 
 	for _, item := range data {
 		idParts := strings.Split(item.ID, "-")
-		marketHashName := item.MarketHashName
 
-		isExcluded, _ := regexp.MatchString(excludedPattern, marketHashName)
-		if !isExcluded {
-			ids[marketHashName] = idParts[1]
+		marketHashName := item.MarketHashName
+		if marketHashName != nil {
+			ids[*marketHashName] = idParts[1]
 		}
 	}
 
